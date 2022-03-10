@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useWeb3 } from "@3rdweb/hooks";
+import { ThirdwebSDK } from "@3rdweb/sdk";
+import { client } from "../../lib/sanityClient";
+import Header from "../../components/Header";
+import { CgWebsite } from "react-icons/cg";
+import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
+import { HiDotsVertical } from "react-icons/hi";
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,
@@ -26,13 +33,136 @@ const style = {
 
 const Collection = () => {
   const router = useRouter();
+  const { provider } = useWeb3();
+  const { collectionId } = router.query;
+  const [collection, setCollection] = useState({});
+  const [nfts, setNfts] = useState([]);
+  const [listings, setListings] = useState([]);
 
-  console.log(router.query.collectionId);
+  // https://eth-rinkeby.alchemyapi.io/v2/xyMQ9lCYzqWiktgf1dCHkZBGTxCi0ZUk
+
+  const nftModule = useMemo(() => {
+    if (!provider) return;
+
+    const sdk = new ThirdwebSDK(
+      provider.getSigner(),
+      "https://eth-rinkeby.alchemyapi.io/v2/xyMQ9lCYzqWiktgf1dCHkZBGTxCi0ZUk"
+    );
+    return sdk.getNFTModule(collectionId);
+  }, [provider]);
+
+  //get all NFT's in collection
+
+  useEffect(() => {
+    if (!nftModule) return;
+    (async () => {
+      const nfts = await nftModule.getAll();
+      setNfts(nfts);
+    })();
+  }, [nftModule]);
+
+  const marketPlaceModule = useMemo(() => {
+    if (!provider) return;
+
+    const sdk = new ThirdwebSDK(
+      provider.getSigner(),
+      "https://eth-rinkeby.alchemyapi.io/v2/xyMQ9lCYzqWiktgf1dCHkZBGTxCi0ZUk"
+    );
+    return sdk.getMarketplaceModule(
+      "0xF62cE08B8581Ef4eE01B0159A4d19d5Ce89fdD73"
+    );
+  }, [provider]);
+
+  useEffect(() => {
+    if (!marketPlaceModule) return;
+    (async () => {
+      setListings(await marketPlaceModule.getAllListings());
+    })();
+  }, [marketPlaceModule]);
+
+  const fetchCollectionData = async (sanityClient = client) => {
+    const query = `*[_type == "marketItems" && contractAddress == "${collectionId}"] {
+      "imageUrl": profileImage.asset->url,
+      "bannerImageUrl": bannerImage.asset->url,
+      volumeTraded,
+      createdBy,
+      contractAddress,
+      "creator": createdBy->userName,
+      title,
+      floorPrice,
+      "allOwers": owners[]->,
+      description
+    }`;
+    const collectionData = await sanityClient.fetch(query);
+
+    console.log("data", collectionData);
+    await setCollection(collectionData[0]);
+  };
+
+  useEffect(() => {
+    fetchCollectionData();
+  }, [collectionId]);
+
+  // console.log(router.query.collectionId);
   return (
     <div>
-      <Link href="/">
-        <h3>{router.query.collectionId}</h3>
-      </Link>
+      <Header />
+      <div className={style.bannerImageContainer}>
+        <img
+          className={style.bannerImage}
+          src={
+            collection?.bannerImageUrl
+              ? collection?.bannerImageUrl
+              : "https://via.placeholder.com/200"
+          }
+          alt="banner"
+        />
+      </div>
+      <div className={style.infoContainer}>
+        <div className={style.midRow}>
+          <img
+            className={style.profileImg}
+            src={
+              collection?.imageUrl
+                ? collection?.imageUrl
+                : "https://via.placeholder.com/200"
+            }
+            alt="profile-img"
+          />
+        </div>
+        <div className={style.endRow}>
+          <div className={style.socialIconsContainer}>
+            <div className={style.socialIconsWrapper}>
+              <div className={style.socialIconsContent}>
+                <div className={style.socialIcon}>
+                  <CgWebsite />
+                </div>
+                <div className={style.divider}></div>
+                <div className={style.socialIcon}>
+                  <AiOutlineInstagram />
+                </div>
+                <div className={style.divider}></div>
+                <div className={style.socialIcon}>
+                  <AiOutlineTwitter />
+                </div>
+                <div className={style.divider}></div>
+                <div className={style.socialIcon}>
+                  <HiDotsVertical />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={style.midrow}>
+          <div className={style.title}>{collection?.title}</div>
+        </div>
+        <div className={style.midrow}>
+          <div className={style.createdBy}>
+            Created By{" "}
+            <span className="text-[#2081e2]">{collection?.creator}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
