@@ -162,6 +162,19 @@ const Collection = () => {
             <span className="text-[#2081e2]">{collection?.creator}</span>
           </div>
         </div>
+        <div className={style.midRow}>
+          <div className={style.statsContainer}>
+            <div className={style.collectionStat}>
+              <div className={style.statValue}>{nfts.length}</div>
+              <div className={style.statName}>{items}</div>
+            </div>
+            <div className={style.collectionStat}>
+              <div className={style.statValue}>
+                {collection?.allOwners ? collction : "0"}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
