@@ -171,6 +171,7 @@ const Collection = () => {
             <div className={style.collectionStat}>
               <div className={style.statValue}>
                 {collection?.allOwners ? collction : "0"}
+                {/* collections  */}
               </div>
             </div>
           </div>
