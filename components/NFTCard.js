@@ -19,10 +19,31 @@ const style = {
   likeIcon: `text-xl mr-2`,
 };
 
-const NFTCard = ({ nftItem }) => {
+const NFTCard = ({ nftItem, title, listings }) => {
+  const [isListed, setIsListed] = useState(false);
+  const [price, setPrice] = useState(0);
+
+  useEffect(() => {
+    const listing = listings.find((listing) => listing.asset.id === nftItem.id);
+    if (Boolean(listing)) {
+      setIsListed(true);
+      setPrice(listing.buyoutCurrencyValuePerToken.displayValue);
+    }
+  }, [listings, nftItem]);
+
   return (
-    <div>
-      <img src={nftItem.image} alt="nft image" />
+    <div
+      className={style.wrapper}
+      onClick={() =>
+        Router.push({
+          pathname: `assets/${nftItem.id}`,
+          query: { isListed: true },
+        })
+      }
+    >
+      <div className={style.imgContainer}>
+        <img src={nftItem.image} alt="nft image" className={style.nftImg} />
+      </div>
     </div>
   );
 };

@@ -155,12 +155,12 @@ const Collection = () => {
             </div>
           </div>
         </div>
-        <div className={style.midrow}>
+        <div className={style.midRow}>
           <div className={style.title}>{collection?.title}</div>
         </div>
-        <div className={style.midrow}>
+        <div className={style.midRow}>
           <div className={style.createdBy}>
-            Created By{" "}
+            Created by{" "}
             <span className="text-[#2081e2]">{collection?.creator}</span>
           </div>
         </div>
