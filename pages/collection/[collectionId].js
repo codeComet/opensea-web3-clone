@@ -8,6 +8,7 @@ import Header from "../../components/Header";
 import { CgWebsite } from "react-icons/cg";
 import { AiOutlineInstagram, AiOutlineTwitter } from "react-icons/ai";
 import { HiDotsVertical } from "react-icons/hi";
+import NFTCard from "../../components/NFTCard";
 
 const style = {
   bannerImageContainer: `h-[20vh] w-screen overflow-hidden flex justify-center items-center`,
@@ -59,6 +60,7 @@ const Collection = () => {
       const nfts = await nftModule.getAll();
       setNfts(nfts);
     })();
+    console.log(nfts);
   }, [nftModule]);
 
   const marketPlaceModule = useMemo(() => {
@@ -170,7 +172,7 @@ const Collection = () => {
             </div>
             <div className={style.collectionStat}>
               <div className={style.statValue}>
-                {collection?.allOwners ? collction.allOwners.length : "1"}
+                {collection?.allOwers ? collection.allOwers.length : ""}
               </div>
               <div className={style.statName}>owners</div>
             </div>
@@ -194,9 +196,23 @@ const Collection = () => {
                 />
                 {collection?.volumeTraded}.5K
               </div>
+              <div className={style.statName}>volume traded</div>
             </div>
           </div>
         </div>
+        <div className={style.midRow}>
+          <div className={style.description}>{collection?.description}</div>
+        </div>
+      </div>
+      <div className="flex flex-wrap">
+        {nfts.map((nft, id) => (
+          <NFTCard
+            key={id}
+            nftItem={nft}
+            title={collection?.title}
+            listings={listings}
+          />
+        ))}
       </div>
     </div>
   );
